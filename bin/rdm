@@ -57,6 +57,7 @@ main() {
           view) view_page "$@" ;;
           open) open_page "$@" ;;
           yank) yank_page "$@" ;;
+           cat) formatter="cat" pager="cat" view_page "$@" ;;
         attach) attach "$@" ;;
              *) die "Unknown subcommand '$cmd'" ;;
     esac
