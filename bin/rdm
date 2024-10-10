@@ -49,6 +49,7 @@ main() {
         edit) edit_page "$@" ;;
         view) view_page "$@" ;;
         open) open_page "$@" ;;
+        yank) yank_page "$@" ;;
            *) die "Unknown subcommand '$cmd'" ;;
     esac
 }
@@ -83,6 +84,11 @@ select_page() {
 open_page() {
     title="$(select_page "$1")"
     xdg-open "$base_url/projects/$project/wiki/$title"
+}
+
+yank_page() {
+    title="$(select_page "$1")"
+    echo "$base_url/projects/$project/wiki/$title" | xclip
 }
 
 view_page() {
