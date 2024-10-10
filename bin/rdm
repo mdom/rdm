@@ -77,7 +77,7 @@ list_pages() {
 
 select_page() {
     if [ -n "$1" ]; then
-        echo "$title"
+        echo "$1"
         return
     fi
     title="$("$0" list | fzf --print-query | tail -1)"
