@@ -7,7 +7,7 @@ die() {
 
 main() {
 
-    trap cleanup EXIT ERR INT
+    trap cleanup EXIT INT
 
     # shellcheck disable=SC1090
     [ -f ~/.rdmrc ] && . ~/.rdmrc
@@ -61,7 +61,7 @@ main() {
 cleanup() {
     ret=$?
     rm -f "$tmpfile"
-    exit $?
+    exit "$ret"
 }
 
 api() {
