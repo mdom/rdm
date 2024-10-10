@@ -9,6 +9,8 @@ main() {
 
     trap cleanup EXIT INT
 
+    formatter="pandoc -f textile -t markdown"
+
     # shellcheck disable=SC1090
     [ -f ~/.rdmrc ] && . ~/.rdmrc
 
@@ -100,7 +102,7 @@ yank_page() {
 
 view_page() {
     title="$(select_page "$1")"
-    api "$title" | jq -r '.wiki_page|.text' | ${less_cmd:-less -F --no-init}
+    api "$title" --fail | jq -r '.wiki_page|.text' | $formatter | ${less_cmd:-less -F --no-init}
 }
 
 edit_page() {
