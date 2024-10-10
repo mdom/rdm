@@ -62,6 +62,7 @@ main() {
         append) append_page "$@" ;;
        prepend) prepend_page "$@" ;;
         attach) attach "$@" ;;
+        search) search "$@" ;;
              *) die "Unknown subcommand '$cmd'" ;;
     esac
 }
@@ -207,6 +208,15 @@ save_page_menu() {
                 ;;
         esac
     done
+}
+
+search() {
+    ## TODO handle more than 100 results
+    url="$(echo "$base_url/search.json?limit=100&q=$*&wiki_pages=1&key=$key"|sed 's/ /%20/g')"
+    curl --silent --show-error --fail "$url" \
+        | jq -r '.results|.[]|.title' \
+        | sed 's/^Wiki: //' \
+        || die "curl returned with exit code $?"
 }
 
 main "$@"
