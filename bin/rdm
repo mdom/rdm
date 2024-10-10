@@ -7,7 +7,7 @@ die() {
 
 main() {
 
-    trap cleanup EXIT
+    trap cleanup EXIT ERR INT
 
     # shellcheck disable=SC1090
     [ -f ~/.rdmrc ] && . ~/.rdmrc
@@ -41,6 +41,10 @@ main() {
 
     tmpfile="$(mktemp -t "${0##*/}_XXXXXXXXX")"
 
+    if [ -z "$1" ]; then
+        die "Usage: ${0##*/} list|edit|view|open|yank [PAGE]"
+    fi
+
     cmd=$1
     shift
 
@@ -55,7 +59,9 @@ main() {
 }
 
 cleanup() {
+    ret=$?
     rm -f "$tmpfile"
+    exit $?
 }
 
 api() {
