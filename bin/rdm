@@ -1,0 +1,129 @@
+#!/bin/sh
+
+die() {
+    printf "%s: %s\n" "${0##*/}" "$1" >&2
+    exit "${2:-1}"
+}
+
+main() {
+
+    trap cleanup EXIT
+
+    # shellcheck disable=SC1090
+    [ -f ~/.rdmrc ] && . ~/.rdmrc
+
+    base_url="${RDM_BASE_URL:-$base_url}"
+    project="${RDM_PROJECT:-$project}"
+    key="${RDM_APIKEY:-$key}"
+
+    while [ -n "$1" ]; do
+        case $1 in
+            --project)
+                 project=$2
+                 shift 2
+                 ;;
+            --base-url)
+                 base_url=$2
+                 shift 2
+                 ;;
+            --api-key)
+                 key=$2
+                 shift 2
+                 ;;
+            --*) die "Unknown parameter '$1'" ;;
+            *) break ;;
+        esac
+    done
+
+    [ -z "$key" ]      && die "Required parameter --api-key missing"
+    [ -z "$project" ]  && die "Required parameter --project missing"
+    [ -z "$base_url" ] && die "Required parameter --base-url missing"
+
+    tmpfile="$(mktemp -t "${0##*/}_XXXXXXXXX")"
+
+    cmd=$1
+    shift
+
+    case $cmd in
+        list) list_pages "$@" ;;
+        edit) edit_page "$@" ;;
+        view) view_page "$@" ;;
+        *) unknown_cmd ;;
+    esac
+}
+
+cleanup() {
+    rm -f "$tmpfile"
+}
+
+api() {
+    url="$base_url/projects/$project/wiki/$1.json?key=$key"
+    shift
+    curl --silent --header 'Content-Type: application/json' "$@" "$url" \
+        || die "curl returned with exit code $?"
+}
+
+list_pages() {
+    api "index" | jq -r '.wiki_pages|.[]|.title'
+}
+
+view_page() {
+    api "$1" | jq -r '.wiki_page|.text' | ${less_cmd:-less -F --no-init}
+}
+
+edit_page() {
+    title="$1"
+    if [ -z "$title" ]; then
+        title="$("$0" list | fzf --print-query | tail -1)"
+    fi
+    if [ -z "$title" ]; then
+        die "No page selected"
+    fi
+    api "$title" | jq -r '.wiki_page|.text' | tr -d '\r' >"$tmpfile"
+    old_text="$(cat "$tmpfile")"
+
+    while true; do
+        ${EDITOR:-vi} "$tmpfile" || return
+        [ -s "$tmpfile" ]        || return
+
+        new_text="$(cat "$tmpfile")"
+        [ "$old_text" != "$new_text" ] || return
+
+        save_page_menu
+
+        case $_ret in
+            y) break ;;
+            n) return ;;
+            e) continue ;;
+        esac
+    done
+
+    jq -n --arg text "$new_text" '{ wiki_page: {text: $text }}' \
+        | api "$1" -X PUT --data @-
+}
+
+save_page_menu() {
+    while true; do
+        printf "%s" "Save page [y,n,e,?]? "
+        read -r _ret
+        case $_ret in
+            y | n | e) return ;;
+                    ?) save_page_help ;;
+        esac
+    done
+}
+
+save_page_help() {
+    printf "%s - %s\n" \
+        "y" "save page" \
+        "n" "discard changes" \
+        "e" "edit page" \
+        "?" "show help"
+}
+
+unknown_cmd() {
+    printf "%s\n" "Unknown subcommand '$cmd'" >&2
+    exit 1
+}
+
+main "$@"
