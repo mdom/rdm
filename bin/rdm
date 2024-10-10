@@ -72,11 +72,11 @@ cleanup() {
     exit "$ret"
 }
 
-api () {
+api()  {
     _api "$@" --fail
 }
 
-api_unsafe () {
+api_unsafe()  {
     _api "$@"
 }
 
