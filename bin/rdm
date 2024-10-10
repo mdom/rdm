@@ -48,6 +48,7 @@ main() {
         list) list_pages "$@" ;;
         edit) edit_page "$@" ;;
         view) view_page "$@" ;;
+        open) open_page "$@" ;;
            *) die "Unknown subcommand '$cmd'" ;;
     esac
 }
@@ -77,6 +78,11 @@ select_page() {
         die "No page selected"
     fi
     echo "$title"
+}
+
+open_page() {
+    title="$(select_page "$1")"
+    xdg-open "$base_url/projects/$project/wiki/$title"
 }
 
 view_page() {
