@@ -17,6 +17,7 @@ main() {
     base_url="${RDM_BASE_URL:-$base_url}"
     project="${RDM_PROJECT:-$project}"
     key="${RDM_APIKEY:-$key}"
+    pager="${RDM_PAGER:-${pager:-${PAGER:-less -F --no-init}}}"
 
     while [ -n "$1" ]; do
         case $1 in
@@ -102,7 +103,7 @@ yank_page() {
 
 view_page() {
     title="$(select_page "$1")"
-    api "$title" --fail | jq -r '.wiki_page|.text' | $formatter | ${less_cmd:-less -F --no-init}
+    api "$title" --fail | jq -r '.wiki_page|.text' | ${formatter} | ${pager}
 }
 
 edit_page() {
