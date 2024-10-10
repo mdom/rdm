@@ -58,6 +58,9 @@ main() {
           open) open_page "$@" ;;
           yank) yank_page "$@" ;;
            cat) formatter="cat" pager="cat" view_page "$@" ;;
+          spew) spew_page "$@" ;;
+        append) append_page "$@" ;;
+       prepend) prepend_page "$@" ;;
         attach) attach "$@" ;;
              *) die "Unknown subcommand '$cmd'" ;;
     esac
@@ -115,11 +118,29 @@ view_page() {
     api "$title" | jq -r '.wiki_page|.text' | ${formatter} | ${pager}
 }
 
-edit_page() {
+spew_page() {
     title="$1"
-    if [ -z "$title" ]; then
-        title="$(select_page)"
-    fi
+    jq -Rs '{ wiki_page: {text: . }}' | api "$title" -X PUT --data @-
+}
+
+append_page() {
+    title="$1"
+    {
+        api_unsafe "$title" | jq -r '.wiki_page|.text' | tr -d '\r'
+        cat
+    } | jq -Rs '{ wiki_page: {text: . }}' | api "$title" -X PUT --data @-
+}
+
+prepend_page() {
+    title="$1"
+    {
+        cat
+        api_unsafe "$title" | jq -r '.wiki_page|.text' | tr -d '\r'
+    } | jq -Rs '{ wiki_page: {text: . }}' | api "$title" -X PUT --data @-
+}
+
+edit_page() {
+    title="$(select_page "$1")"
     api_unsafe "$title" | jq -r '.wiki_page|.text' | tr -d '\r' >"$tmpfile"
     old_text="$(cat "$tmpfile")"
 
