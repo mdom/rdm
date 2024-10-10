@@ -118,13 +118,16 @@ edit_page() {
         new_text="$(cat "$tmpfile")"
         [ "$old_text" != "$new_text" ] || return
 
-        save_page_menu
+        while true; do
+            save_page_menu
 
-        case $_ret in
-            y) break ;;
-            n) return ;;
-            e) continue ;;
-        esac
+            case $_ret in
+                y) break 2 ;;
+                n) return ;;
+                d) echo "$old_text" | diff -u - "$tmpfile" ;;
+                e) continue 2 ;;
+            esac
+        done
     done
 
     jq -n --arg text "$new_text" '{ wiki_page: {text: $text }}' \
@@ -150,15 +153,15 @@ attach() {
                 inputs | split(" ") | {token: .[0], filename: .[1]}
             ]
         }}' \
-        | api "$title" -X PUT --data @-
+        | api "$title" --fail -X PUT --data @-
 }
 
 save_page_menu() {
     while true; do
-        printf "%s" "Save page [y,n,e,?]? "
+        printf "%s" "Save page [y,n,e,d,?]? "
         read -r _ret
         case $_ret in
-            y | n | e)
+            y | n | e | d)
                 return
                 ;;
             ?)
@@ -166,6 +169,7 @@ save_page_menu() {
                     "y" "save page" \
                     "n" "discard changes" \
                     "e" "edit page" \
+                    "d" "diff page" \
                     "?" "show help"
                 ;;
         esac
