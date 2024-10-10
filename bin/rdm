@@ -48,7 +48,7 @@ main() {
         list) list_pages "$@" ;;
         edit) edit_page "$@" ;;
         view) view_page "$@" ;;
-        *) unknown_cmd ;;
+           *) die "Unknown subcommand '$cmd'" ;;
     esac
 }
 
@@ -107,23 +107,18 @@ save_page_menu() {
         printf "%s" "Save page [y,n,e,?]? "
         read -r _ret
         case $_ret in
-            y | n | e) return ;;
-                    ?) save_page_help ;;
+            y | n | e)
+                return
+                ;;
+            ?)
+                printf "%s - %s\n" \
+                    "y" "save page" \
+                    "n" "discard changes" \
+                    "e" "edit page" \
+                    "?" "show help"
+                ;;
         esac
     done
-}
-
-save_page_help() {
-    printf "%s - %s\n" \
-        "y" "save page" \
-        "n" "discard changes" \
-        "e" "edit page" \
-        "?" "show help"
-}
-
-unknown_cmd() {
-    printf "%s\n" "Unknown subcommand '$cmd'" >&2
-    exit 1
 }
 
 main "$@"
