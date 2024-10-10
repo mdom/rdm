@@ -69,7 +69,15 @@ cleanup() {
     exit "$ret"
 }
 
-api() {
+api () {
+    _api "$@" --fail
+}
+
+api_unsafe () {
+    _api "$@"
+}
+
+_api() {
     url="$base_url/projects/$project/wiki/$1.json?key=$key"
     shift
     curl --silent --header 'Content-Type: application/json' "$@" "$url" \
@@ -104,7 +112,7 @@ yank_page() {
 
 view_page() {
     title="$(select_page "$1")"
-    api "$title" --fail | jq -r '.wiki_page|.text' | ${formatter} | ${pager}
+    api "$title" | jq -r '.wiki_page|.text' | ${formatter} | ${pager}
 }
 
 edit_page() {
@@ -112,7 +120,7 @@ edit_page() {
     if [ -z "$title" ]; then
         title="$(select_page)"
     fi
-    api "$title" | jq -r '.wiki_page|.text' | tr -d '\r' >"$tmpfile"
+    api_unsafe "$title" | jq -r '.wiki_page|.text' | tr -d '\r' >"$tmpfile"
     old_text="$(cat "$tmpfile")"
 
     while true; do
@@ -157,7 +165,7 @@ attach() {
                 inputs | split(" ") | {token: .[0], filename: .[1]}
             ]
         }}' \
-        | api "$title" --fail -X PUT --data @-
+        | api "$title" -X PUT --data @-
 }
 
 save_page_menu() {
