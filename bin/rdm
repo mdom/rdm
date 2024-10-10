@@ -67,17 +67,27 @@ list_pages() {
     api "index" | jq -r '.wiki_pages|.[]|.title'
 }
 
+select_page() {
+    if [ -n "$1" ]; then
+        echo "$title"
+        return
+    fi
+    title="$("$0" list | fzf --print-query | tail -1)"
+    if [ -z "$title" ]; then
+        die "No page selected"
+    fi
+    echo "$title"
+}
+
 view_page() {
-    api "$1" | jq -r '.wiki_page|.text' | ${less_cmd:-less -F --no-init}
+    title="$(select_page "$1")"
+    api "$title" | jq -r '.wiki_page|.text' | ${less_cmd:-less -F --no-init}
 }
 
 edit_page() {
     title="$1"
     if [ -z "$title" ]; then
-        title="$("$0" list | fzf --print-query | tail -1)"
-    fi
-    if [ -z "$title" ]; then
-        die "No page selected"
+        title="$(select_page)"
     fi
     api "$title" | jq -r '.wiki_page|.text' | tr -d '\r' >"$tmpfile"
     old_text="$(cat "$tmpfile")"
