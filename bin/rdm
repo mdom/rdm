@@ -9,7 +9,7 @@ main() {
 
     trap cleanup EXIT INT
 
-    formatter="pandoc -f textile -t markdown"
+    formatter="pandoc -f textile -t plain"
 
     # shellcheck disable=SC1090
     [ -f ~/.rdmrc ] && . ~/.rdmrc
