@@ -58,7 +58,7 @@ main() {
           open) open_page "$@" ;;
           yank) yank_page "$@" ;;
            cat) formatter="cat" pager="cat" view_page "$@" ;;
-          spew) spew_page "$@" ;;
+       replace) replace_page "$@" ;;
         append) append_page "$@" ;;
        prepend) prepend_page "$@" ;;
         attach) attach "$@" ;;
@@ -118,7 +118,7 @@ view_page() {
     api "$title" | jq -r '.wiki_page|.text' | ${formatter} | ${pager}
 }
 
-spew_page() {
+replace_page() {
     title="$1"
     jq -Rs '{ wiki_page: {text: . }}' | api "$title" -X PUT --data @-
 }
