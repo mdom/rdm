@@ -52,18 +52,18 @@ main() {
     shift
 
     case $cmd in
-          list) list_pages "$@" ;;
-          edit) edit_page "$@" ;;
-          view) view_page "$@" ;;
-          open) open_page "$@" ;;
-          yank) yank_page "$@" ;;
-           cat) formatter="cat" pager="cat" view_page "$@" ;;
-       replace) replace_page "$@" ;;
-        append) append_page "$@" ;;
-       prepend) prepend_page "$@" ;;
-        attach) attach "$@" ;;
-        search) search "$@" ;;
-             *) die "Unknown subcommand '$cmd'" ;;
+           list) list_pages "$@" ;;
+           edit) edit_page "$@" ;;
+           view) view_page "$@" ;;
+           open) open_page "$@" ;;
+           yank) yank_page "$@" ;;
+            cat) formatter="cat" pager="cat" view_page "$@" ;;
+        replace) replace_page "$@" ;;
+         append) append_page "$@" ;;
+        prepend) prepend_page "$@" ;;
+         attach) attach "$@" ;;
+         search) search "$@" ;;
+              *) die "Unknown subcommand '$cmd'" ;;
     esac
 }
 
@@ -212,7 +212,7 @@ save_page_menu() {
 
 search() {
     ## TODO handle more than 100 results
-    url="$(echo "$base_url/search.json?limit=100&q=$*&wiki_pages=1&key=$key"|sed 's/ /%20/g')"
+    url="$(echo "$base_url/search.json?limit=100&q=$*&wiki_pages=1&key=$key" | sed 's/ /%20/g')"
     curl --silent --show-error --fail "$url" \
         | jq -r '.results|.[]|.title' \
         | sed 's/^Wiki: //' \
