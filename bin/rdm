@@ -42,19 +42,20 @@ main() {
     tmpfile="$(mktemp -t "${0##*/}_XXXXXXXXX")"
 
     if [ -z "$1" ]; then
-        die "Usage: ${0##*/} list|edit|view|open|yank [PAGE]"
+        die "Usage: ${0##*/} list|edit|view|open|yank|attach [PAGE] [FILES...]"
     fi
 
     cmd=$1
     shift
 
     case $cmd in
-        list) list_pages "$@" ;;
-        edit) edit_page "$@" ;;
-        view) view_page "$@" ;;
-        open) open_page "$@" ;;
-        yank) yank_page "$@" ;;
-           *) die "Unknown subcommand '$cmd'" ;;
+          list) list_pages "$@" ;;
+          edit) edit_page "$@" ;;
+          view) view_page "$@" ;;
+          open) open_page "$@" ;;
+          yank) yank_page "$@" ;;
+        attach) attach "$@" ;;
+             *) die "Unknown subcommand '$cmd'" ;;
     esac
 }
 
@@ -128,6 +129,28 @@ edit_page() {
 
     jq -n --arg text "$new_text" '{ wiki_page: {text: $text }}' \
         | api "$1" -X PUT --data @-
+}
+
+upload() {
+    url="$base_url/uploads.json?key=$key"
+    for file; do
+        curl -X POST --data "@$file" --silent --header 'Content-Type: application/octet-stream' "$url" \
+            | jq --arg file "${file##*/}" -r '.upload | .token + " " + $file'
+    done
+}
+
+attach() {
+    title="$1"
+    shift
+    text="$(api "$title" | jq -r '.wiki_page|.text' | tr -d '\r')"
+    upload "$@" | jq -Rn --arg text "$text" \
+        '{ wiki_page: { 
+            text: $text,
+            uploads: [
+                inputs | split(" ") | {token: .[0], filename: .[1]}
+            ]
+        }}' \
+        | api "$title" -X PUT --data @-
 }
 
 save_page_menu() {
