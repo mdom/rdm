@@ -117,7 +117,7 @@ _api() {
 }
 
 list_pages() {
-    api "index" | jq -r '.wiki_pages|.[]|.title'
+    api "index" | jq -r '.wiki_pages|.[]|.title' | grep -Eie "${1:-.}"
 }
 
 select_page() {

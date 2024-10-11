@@ -31,9 +31,10 @@ Use the specified api-key to authenticate against your redmine server.
 If the title parameter is specified as optional, fzf is called with a
 list of all pages to select one.
 
-## list
+## list [QUERY]
 
-List Redmine wiki pages.
+List Redmine wiki pages. If a query is given, filter the result
+through \<grep -Ei\>.
 
 ## delete [TITLE]
 
