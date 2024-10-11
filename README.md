@@ -83,11 +83,11 @@ the page in your browser.
 
 Yank the complete url to the specified wiki page to your clipboard.
 
-## diff TITLE [VERSION] [VERSION]
+## diff TITLE [OLDER_VERSION] [NEWER_VERSION]
 
-Diff two versions of the specified wiki page. If only one version is
-given, diff specified version against the current page. If not versions
-are given, diff the previous against the current version.
+Diff two versions of the specified wiki page. _OLDER_VERSION_ defaults
+to -1 and _NEWER_VERSION_ to the current version of the page. If
+_OLDER_VERSION_ is negative it is substracted from _NEWER_VERSION_.
 
 # CONFIGURATION FILE
 

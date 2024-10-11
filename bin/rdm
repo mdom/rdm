@@ -263,24 +263,17 @@ page_content() {
     api "$1" | jq -r '.wiki_page|.text' | tr -d '\r'
 }
 
-diff_no_header() {
-    diff -u "$@" | sed 1,3d
-}
-
 diff_page() {
     select_page "$1"
-    if [ -n "$2" ] && [ -n "$3" ]; then
-        page_content "$title/$2" >"$tmpfile"
-        page_content "$title/$3" | diff_no_header "$tmpfile" -
-    elif [ -n "$2" ]; then
-        page_content "$title/$2" >"$tmpfile"
-        page_content "$title" | diff_no_header "$tmpfile" -
-    else
-        cur_version=$(api "$title" | jq -r '.wiki_page|.version')
-        old_version=$((cur_version - 1))
-        page_content "$title/$old_version" >"$tmpfile"
-        page_content "$title/$cur_version" | diff_no_header "$tmpfile" -
-    fi
+    older_version="${2--1}"
+    newer_version="${3-$(api "$title" | jq -r '.wiki_page|.version')}"
+
+    case $older_version in
+        -*)  older_version=$((newer_version - ${older_version#-}))  ;;
+    esac
+
+    page_content "$title/$older_version" >"$tmpfile"
+    page_content "$title/$newer_version" | diff -u "$@" | sed 1,3d
 }
 
 main "$@"
