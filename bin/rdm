@@ -45,7 +45,7 @@ main() {
     tmpfile="$(mktemp -t "${0##*/}_XXXXXXXXX")"
 
     if [ -z "$1" ]; then
-        die "Usage: ${0##*/} list|edit|view|open|yank|attach [PAGE] [FILES...]"
+        die "Usage: ${0##*/} CMD [PAGE] [FILES...]"
     fi
 
     cmd=$1
