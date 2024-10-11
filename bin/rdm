@@ -5,14 +5,23 @@ die() {
     exit "${2:-1}"
 }
 
+read_config() {
+    for i; do
+        if [ -f "$i" ]; then
+            # shellcheck disable=SC1090
+            . "$i"
+            return
+        fi
+    done
+}
+
 main() {
 
     trap cleanup EXIT INT
 
     formatter="pandoc -f textile -t plain"
 
-    # shellcheck disable=SC1090
-    [ -f ~/.rdmrc ] && . ~/.rdmrc
+    read_config "${XDG_CONFIG_HOME:-${HOME}/.config}/rdm/rdmrc}" ~/.rdmrc
 
     base_url="${RDM_BASE_URL:-$base_url}"
     project="${RDM_PROJECT:-$project}"
