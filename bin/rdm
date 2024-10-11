@@ -20,6 +20,7 @@ main() {
     trap cleanup EXIT INT
 
     formatter="pandoc -f textile -t plain"
+    editor="${EDITOR:-vi}"
 
     read_config "${XDG_CONFIG_HOME:-${HOME}/.config}/rdm/rdmrc}" ~/.rdmrc
 
@@ -173,7 +174,7 @@ edit_page() {
     old_text="$(cat "$tmpfile")"
 
     while true; do
-        ${EDITOR:-vi} "$tmpfile" || return
+        ${editor} "$tmpfile" || return
         [ -s "$tmpfile" ]        || return
 
         new_text="$(cat "$tmpfile")"

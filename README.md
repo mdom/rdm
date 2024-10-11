@@ -133,6 +133,10 @@ Used by the view command to format the wiki page. It defaults to
 \<pandoc -f textile -t plain\>. If you don't wont view to format the
 page, you can get the raw content by setting _formatter_ to \<cat\>.
 
+## editor
+
+Set editor. Default to the value of \$EDITOR or "vi".
+
 ## user
 
 User to login with. Must be set if apikey is missing.
