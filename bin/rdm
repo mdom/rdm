@@ -33,6 +33,10 @@ main() {
                  key=$2
                  shift 2
                  ;;
+             --help )
+                printf "%s\n" "Usage: ${0##*/} CMD [PAGE] [FILES...]"
+                exit 0
+                ;;
             --*) die "Unknown parameter '$1'" ;;
             *) break ;;
         esac
