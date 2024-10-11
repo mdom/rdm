@@ -125,7 +125,7 @@ select_page() {
         title="$1"
         return
     fi
-    title="$("$0" list | fzf --print-query | tail -1)"
+    title="$(list_pages | fzf --print-query | tail -1)"
     if [ -z "$title" ]; then
         die "No page selected"
     fi
