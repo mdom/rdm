@@ -63,6 +63,7 @@ main() {
         prepend) prepend_page "$@" ;;
          attach) attach "$@" ;;
          search) search "$@" ;;
+         delete) delete_page "$@" ;;
               *) die "Unknown subcommand '$cmd'" ;;
     esac
 }
@@ -226,6 +227,29 @@ search() {
 
         jq -r '.results|.[]|.title' "$tmpfile" | sed 's/^Wiki: //'
         offset="$((offset + 100))"
+    done
+}
+
+delete_page() {
+    title="$(select_page "$1")"
+    while true; do
+        printf "%s" "Delete page '$title' [y,n,?]? "
+        read -r ret
+        case $ret in
+            y)
+                api "$title" -X DELETE
+                break
+                ;;
+            n)
+                break
+                ;;
+            ?)
+                printf "%s - %s\n" \
+                    "y" "delete page" \
+                    "n" "keep page" \
+                    "?" "show help"
+                ;;
+        esac
     done
 }
 
