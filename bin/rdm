@@ -197,7 +197,6 @@ edit_page() {
 }
 
 my_curl() {
-    set -x
     curl --silent ${user:+--user "$user:$password"} "$@"
 }
 
