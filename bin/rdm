@@ -68,6 +68,7 @@ main() {
          attach) attach "$@" ;;
          search) search "$@" ;;
          delete) delete_page "$@" ;;
+           diff) diff_page "$@" ;;
               *) die "Unknown subcommand '$cmd'" ;;
     esac
 }
@@ -257,6 +258,26 @@ delete_page() {
                 ;;
         esac
     done
+}
+
+page_content() {
+    api "$1" | jq -r '.wiki_page|.text' | tr -d '\r'
+}
+
+diff_page() {
+    title="$(select_page "$1")"
+    if [ -n "$2" ] && [ -n "$3" ]; then
+        page_content "$title/$2" >"$tmpfile"
+        page_content "$title/$3" | diff -u "$tmpfile" - | sed '1,3d'
+    elif [ -n "$2" ]; then
+        page_content "$title/$2" >"$tmpfile"
+        page_content "$title" | diff -u "$tmpfile" - | sed '1,3d'
+    else
+        cur_version=$(api "$title" | jq -r '.wiki_page|.version')
+        old_version=$((cur_version - 1))
+        page_content "$title/$old_version" >"$tmpfile"
+        page_content "$title/$cur_version" | diff -u "$tmpfile" - | sed '1,3d'
+    fi
 }
 
 main "$@"

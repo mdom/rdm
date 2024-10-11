@@ -83,6 +83,12 @@ the page in your browser.
 
 Yank the complete url to the specified wiki page to your clipboard.
 
+## diff TITLE [VERSION] [VERSION]
+
+Diff two versions of the specified wiki page. If only one version is
+given, diff specified version against the current page. If not versions
+are given, diff the previous against the current version.
+
 # CONFIGURATION FILE
 
 Either \<~/.config/rdm/rdmrc> or \<~/.rdmrc\> are sourced on startup as
