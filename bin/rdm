@@ -28,6 +28,18 @@ main() {
     key="${RDM_APIKEY:-$key}"
     pager="${RDM_PAGER:-${pager:-${PAGER:-less -F --no-init}}}"
 
+    if [ -z "$key" ]; then
+        if [ -z "$user" ]; then
+            die "Missing apikey, user must be set."
+        fi
+        if [ -z "$password" ] && [ -z "$pass_cmd" ]; then
+            die "Either password or pass_cmd must be set."
+        fi
+        if [ -n "$pass_cmd" ]; then
+            password="$($pass_cmd)"
+        fi
+    fi
+
     while [ -n "$1" ]; do
         case $1 in
             --project)
@@ -99,7 +111,7 @@ api_unsafe()  {
 _api() {
     url="$base_url/projects/$project/wiki/$1.json?key=$key"
     shift
-    curl --silent --header 'Content-Type: application/json' "$@" "$url" \
+    my_curl --header 'Content-Type: application/json' "$@" "$url" \
         || die "curl returned with exit code $?"
 }
 
@@ -183,10 +195,15 @@ edit_page() {
         | api "$title" -X PUT --data @-
 }
 
+my_curl() {
+    set -x
+    curl --silent ${user:+--user "$user:$password"} "$@"
+}
+
 upload() {
     url="$base_url/uploads.json?key=$key"
     for file; do
-        curl -X POST --data "@$file" --silent --header 'Content-Type: application/octet-stream' "$url" \
+        my_curl -X POST --data "@$file" --header 'Content-Type: application/octet-stream' "$url" \
             | jq --arg file "${file##*/}" -r '.upload | .token + " " + $file'
     done
 }
@@ -232,7 +249,7 @@ search() {
 
     offset=0
     while [ -z "$total" ] || [ "$((offset))"   -lt "$total" ]; do
-        curl --url-query "offset=$offset" --silent --show-error --fail "$url" \
+        my_curl --url-query "offset=$offset" --show-error --fail "$url" \
             >"$tmpfile" \
             || die "curl returned with exit code $?"
 

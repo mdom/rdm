@@ -124,6 +124,20 @@ Used by the view command to format the wiki page. It defaults to
 \<pandoc -f textile -t plain\>. If you don't wont view to format the
 page, you can get the raw content by setting _formatter_ to \<cat\>.
 
+## user
+
+User to login with. Must be set if apikey is missing.
+
+## password
+
+Password to login with. Must be set if apikey and pass_cmd is
+missing.
+
+## pass_cmd
+
+Command to query password. Must be set if apikey and password is
+missing.
+
 # ENVIRONMENT
 
 ## RDM_PROJECT
