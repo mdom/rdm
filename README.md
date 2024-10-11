@@ -89,8 +89,8 @@ _OLDER_VERSION_ is negative it is substracted from _NEWER_VERSION_.
 
 # CONFIGURATION FILE
 
-Either \<~/.config/rdm/rdmrc> or \<~/.rdmrc\> are sourced on startup as
-shell script.
+Either \<\$XDG_CONFIG_HOME/rdm/rdmrc> or \<\~/.rdmrc\> are sourced on
+startup as shell script.
 
 For example:
 
