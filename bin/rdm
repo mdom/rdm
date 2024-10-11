@@ -264,19 +264,23 @@ page_content() {
     api "$1" | jq -r '.wiki_page|.text' | tr -d '\r'
 }
 
+diff_no_header() {
+    diff -u "$@" | sed 1,3d
+}
+
 diff_page() {
     title="$(select_page "$1")"
     if [ -n "$2" ] && [ -n "$3" ]; then
         page_content "$title/$2" >"$tmpfile"
-        page_content "$title/$3" | diff -u "$tmpfile" - | sed '1,3d'
+        page_content "$title/$3" | diff_no_header "$tmpfile" -
     elif [ -n "$2" ]; then
         page_content "$title/$2" >"$tmpfile"
-        page_content "$title" | diff -u "$tmpfile" - | sed '1,3d'
+        page_content "$title" | diff_no_header "$tmpfile" -
     else
         cur_version=$(api "$title" | jq -r '.wiki_page|.version')
         old_version=$((cur_version - 1))
         page_content "$title/$old_version" >"$tmpfile"
-        page_content "$title/$cur_version" | diff -u "$tmpfile" - | sed '1,3d'
+        page_content "$title/$cur_version" | diff_no_header "$tmpfile" -
     fi
 }
 
