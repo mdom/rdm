@@ -28,26 +28,29 @@ Use the specified api-key to authenticate against your redmine server.
 
 # SUBCOMMANDS
 
+If the title parameter is specified as optional, fzf is called with a
+list of all pages to select one.
+
 ## list
 
 List Redmine wiki pages.
 
-## delete TITLE
+## delete [TITLE]
 
 Delete the specified Redmine wiki page
 
-## edit TITLE
+## edit [TITLE]
 
 Edit the content of the specified Redmine wiki page.
 
-## view TITLE
+## view [TITLE]
 
 View the content of the specified Redmine wiki page in PAGER. If pager
 is not set \<less -F \--no-init\> is used. The page is piped through
 pandoc to generate plain output. This can be changed by the _formatter_
 configuration option.
 
-## cat TITLE
+## cat [TITLE]
 
 Write the raw content of the specified Redmine wiki page to stdout.
 
@@ -72,12 +75,12 @@ Append stdin to the content of the specified wiki page.
 
 Prepend stdin to the content of the specified wiki page with stdin.
 
-## open TITLE
+## open [TITLE]
 
 Open the specified wiki page with xdg-open. This will most likely open
 the page in your browser.
 
-## yank TITLE
+## yank [TITLE]
 
 Yank the complete url to the specified wiki page to your clipboard.
 
@@ -87,7 +90,7 @@ Diff two versions of the specified wiki page. _OLDER_VERSION_ defaults
 to -1 and _NEWER_VERSION_ to the current version of the page. If
 _OLDER_VERSION_ is negative it is substracted from _NEWER_VERSION_.
 
-## rename TITLE
+## rename [TITLE]
 
 Open the rename dialog for the specified wiki page. As their's no api to
 rename a page, rdm has to use the browser.
