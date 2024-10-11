@@ -171,7 +171,7 @@ edit_page() {
     done
 
     jq -n --arg text "$new_text" '{ wiki_page: {text: $text }}' \
-        | api "$1" -X PUT --data @-
+        | api "$title" -X PUT --data @-
 }
 
 upload() {
