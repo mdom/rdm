@@ -211,12 +211,22 @@ save_page_menu() {
 }
 
 search() {
-    ## TODO handle more than 100 results
-    url="$(echo "$base_url/search.json?limit=100&q=$*&wiki_pages=1&key=$key" | sed 's/ /%20/g')"
-    curl --silent --show-error --fail "$url" \
-        | jq -r '.results|.[]|.title' \
-        | sed 's/^Wiki: //' \
-        || die "curl returned with exit code $?"
+    url="$base_url/search.json?limit=100&q=$*&wiki_pages=1&key=$key"
+    url="$(echo "$url" | sed 's/ /%20/g')"
+
+    offset=0
+    while [ -z "$total" ] || [ "$((offset))"   -lt "$total" ]; do
+        curl --url-query "offset=$offset" --silent --show-error --fail "$url" \
+            >"$tmpfile" \
+            || die "curl returned with exit code $?"
+
+        if [ -z "$total" ]; then
+            total="$( jq '.total_count' "$tmpfile")"
+        fi
+
+        jq -r '.results|.[]|.title' "$tmpfile" | sed 's/^Wiki: //'
+        offset="$((offset + 100))"
+    done
 }
 
 main "$@"
