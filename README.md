@@ -1,5 +1,3 @@
-% RDM(1) Version 1.0 | User Guide for rdm
-
 # NAME
 
 rdm - Manage Redmine project wiki pages

@@ -3,7 +3,7 @@ check:
 	shfmt -l bin/*
 
 man:
-	pandoc -t man --standalone README.md > rdm.1
+	{ echo "% RDM(1) Version 1.0 | User Guide for rdm"; pandoc -t man --standalone README.md; } > rdm.1
 
 install:
 	cp bin/* ~/bin/
