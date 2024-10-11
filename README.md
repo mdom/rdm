@@ -87,6 +87,11 @@ Diff two versions of the specified wiki page. _OLDER_VERSION_ defaults
 to -1 and _NEWER_VERSION_ to the current version of the page. If
 _OLDER_VERSION_ is negative it is substracted from _NEWER_VERSION_.
 
+## rename TITLE
+
+Open the rename dialog for the specified wiki page. As their's no api to
+rename a page, rdm has to use the browser.
+
 # CONFIGURATION FILE
 
 Either \<\$XDG_CONFIG_HOME/rdm/rdmrc> or \<\~/.rdmrc\> are sourced on

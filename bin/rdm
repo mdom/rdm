@@ -90,6 +90,7 @@ main() {
          search) search "$@" ;;
          delete) delete_page "$@" ;;
            diff) diff_page "$@" ;;
+         rename) rename_page "$@" ;;
               *) die "Unknown subcommand '$cmd'" ;;
     esac
 }
@@ -300,6 +301,11 @@ diff_page() {
 
     page_content "$title/$older_version" >"$tmpfile"
     page_content "$title/$newer_version" | diff -u "$tmpfile" - | sed 1,3d
+}
+
+rename_page() {
+    select_page "$1"
+    xdg-open "$base_url/projects/$project/wiki/$title/rename"
 }
 
 main "$@"
