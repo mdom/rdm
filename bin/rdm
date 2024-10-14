@@ -174,7 +174,7 @@ edit_page() {
     old_text="$(cat "$tmpfile")"
 
     while true; do
-        ${editor} "$tmpfile" || return
+        eval ${editor} "$tmpfile" || return
         [ -s "$tmpfile" ]        || return
 
         new_text="$(cat "$tmpfile")"
