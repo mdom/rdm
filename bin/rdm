@@ -122,11 +122,12 @@ list_pages() {
 }
 
 select_page() {
-    if [ -n "$1" ]; then
-        title="$1"
-        return
-    fi
-    title="$(list_pages | fzf --print-query | tail -1)"
+    case $1 in
+        t:*)  title="$(list_pages "${1#t:}" | fzf --print-query | tail -1)" ;;
+        b:*)  title="$(search     "${1#b:}" | fzf --print-query | tail -1)" ;;
+         "")  title="$(list_pages "${1#t:}" | fzf --print-query | tail -1)" ;;
+          *)  title="$1" ;;
+    esac
     if [ -z "$title" ]; then
         die "No page selected"
     fi
