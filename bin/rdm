@@ -246,7 +246,7 @@ save_page_menu() {
 }
 
 search() {
-    url="$base_url/search.json?limit=100&q=$*&wiki_pages=1&key=$key"
+    url="$base_url/projects/$project/search.json?limit=100&q=$*&wiki_pages=1&key=$key"
     url="$(echo "$url" | sed 's/ /%20/g')"
 
     offset=0
