@@ -29,7 +29,8 @@ Use the specified api-key to authenticate against your redmine server.
 # SUBCOMMANDS
 
 If the title parameter is specified as optional, fzf is called with a
-list of all pages to select one.
+list of all pages to select one. If the optional title is prefix by t: or b:
+search for pages matching either the given title or body.
 
 ## list [QUERY]
 
@@ -59,10 +60,10 @@ Write the raw content of the specified Redmine wiki page to stdout.
 
 Attach FILES to the specified wiki page.
 
-## search QUERY
+## search QUERY...
 
 Search for QUERY in the title and body of all wiki pages in your
-project.
+project. If the parameter -t is given, search only titles.
 
 ## replace TITLE
 

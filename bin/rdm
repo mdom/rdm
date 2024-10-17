@@ -78,7 +78,7 @@ main() {
     shift
 
     case $cmd in
-           list) list_pages "$@" ;;
+           list) search -t "$@" ;;
            edit) edit_page "$@" ;;
            view) view_page "$@" ;;
            open) open_page "$@" ;;
@@ -117,16 +117,12 @@ _api() {
         || die "curl returned with exit code $?"
 }
 
-list_pages() {
-    api "index" | jq -r '.wiki_pages|.[]|.title' | grep -Eie "${1:-.}"
-}
-
 select_page() {
-    case $1 in
-        t:*)  title="$(list_pages "${1#t:}" | fzf --print-query | tail -1)" ;;
-        b:*)  title="$(search     "${1#b:}" | fzf --print-query | tail -1)" ;;
-         "")  title="$(list_pages "${1#t:}" | fzf --print-query | tail -1)" ;;
-          *)  title="$1" ;;
+    case "$1" in
+        b:*) title="$(search    "${1#b:}" | fzf --print-query | tail -1)" ;;
+        t:*) title="$(search -t "${1#t:}" | fzf --print-query | tail -1)" ;;
+         "") title="$(search              | fzf --print-query | tail -1)" ;;
+          *) title="$1" ;;
     esac
     if [ -z "$title" ]; then
         die "No page selected"
@@ -247,13 +243,31 @@ save_page_menu() {
 }
 
 search() {
-    url="$base_url/projects/$project/search.json?limit=100&q=$*&wiki_pages=1&key=$key"
+    case $1 in
+        -t )
+            search_titles=1
+            shift
+            ;;
+        -b )
+            search_titles=""
+            shift
+            ;;
+    esac
+    if [ "$#" -eq 0 ]; then
+        api "index" | jq -r '.wiki_pages|.[]|.title'
+    fi
+    url="$base_url/projects/$project/search.json?q=$*&wiki_pages=1&key=$key"
     url="$(echo "$url" | sed 's/ /%20/g')"
 
     offset=0
     while [ -z "$total" ] || [ "$((offset))"   -lt "$total" ]; do
-        my_curl --url-query "offset=$offset" --show-error --fail "$url" \
-            >"$tmpfile" \
+        my_curl \
+            ${search_titles:+--url-query "titles_only=1"} \
+            --url-query "offset=$offset" \
+            --url-query "limit=100" \
+            --show-error \
+            --fail \
+            "$url" >"$tmpfile" \
             || die "curl returned with exit code $?"
 
         if [ -z "$total" ]; then
