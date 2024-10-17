@@ -302,7 +302,10 @@ diff_page() {
     esac
 
     page_content "$title/$older_version" >"$tmpfile"
-    page_content "$title/$newer_version" | diff -u "$tmpfile" - | sed 1,3d
+    page_content "$title/$newer_version" \
+        | diff -u "$tmpfile" - \
+        | sed 1,3d \
+        | ${pager}
 }
 
 rename_page() {
