@@ -27,7 +27,7 @@ main() {
     base_url="${RDM_BASE_URL:-$base_url}"
     project="${RDM_PROJECT:-$project}"
     key="${RDM_APIKEY:-$key}"
-    pager="${RDM_PAGER:-${pager:-${PAGER:-less -F --no-init}}}"
+    pager="${RDM_PAGER:-${pager:-less -F --no-init}}"
 
     if [ -z "$key" ]; then
         if [ -z "$user" ]; then
