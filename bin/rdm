@@ -244,11 +244,11 @@ save_page_menu() {
 
 search() {
     case $1 in
-        -t )
+        -t)
             search_titles=1
             shift
             ;;
-        -b )
+        -b)
             search_titles=""
             shift
             ;;
