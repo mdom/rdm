@@ -90,6 +90,9 @@ main() {
          delete) delete_page "$@" ;;
            diff) diff_page "$@" ;;
          rename) rename_page "$@" ;;
+          files) files "$@" ;;
+        view-file) view_file "$@" ;;
+        ui-files) ui_files "$@" ;;
         edit-reload) edit_reload "$@" ;;
              "") ui "$@" ;;
               *) die "Unknown subcommand '$cmd'" ;;
@@ -142,19 +145,18 @@ ui() {
 
     search | fzf \
         --border=rounded \
-        --tac \
-        --border-label " Redmine $base_url $project " \
         --no-scrollbar \
         --preview-window border-left \
         --exact \
+        --reverse \
         --header-first \
-        --header "^e edit ^v view ^o open ^y yank ^s search ^d diff ^c quit" \
+        --border-label " rdm: ^j view ^e edit ^v files ^o open ^y yank ^s search ^d diff ^c quit " \
         --preview "$0 view {}" \
         --bind "ctrl-e:execute($0 edit {})+refresh-preview" \
         --bind "ctrl-o:execute($0 open {})" \
         --bind "ctrl-y:execute($0 yank {})" \
         --bind "ctrl-d:execute($0 diff {})" \
-        --bind "ctrl-v:execute($0 view {})+refresh-preview" \
+        --bind "ctrl-v:execute($0 ui-files {})" \
         --bind "ctrl-s:reload($0 search {q})+clear-query" \
         --bind "enter:execute($0 view {})+refresh-preview"
 }
@@ -167,6 +169,27 @@ open_page() {
 yank_page() {
     select_page "$1"
     echo "$base_url/projects/$project/wiki/$title" | xclip
+}
+
+ui_files() {
+    files "$1" >"$tmpfile"
+    [ -s "$tmpfile" ] || return
+    fzf <"$tmpfile"  | awk '{print $1}' | xargs -r "$0" view-file
+}
+
+view_file() {
+    my_curl "$base_url/attachments/$1.json" | jq -r '.attachment | .content_url' \
+        | while read -r url; do
+            my_curl "$url" >"$tmpfile"
+        done
+    [ -s "$tmpfile" ] || return
+    xdg-open "$tmpfile"
+}
+
+files() {
+    select_page "$1"
+    api "$title" --url-query include=attachments \
+        | jq -r '.wiki_page|.attachments|.[]|(.id|tostring)+" " +.filename'
 }
 
 edit_reload() {
