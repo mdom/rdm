@@ -19,7 +19,7 @@ main() {
 
     trap cleanup EXIT INT
 
-    formatter="pandoc -f textile -t plain"
+    formatter="pandoc -f textile -t plain --columns $(tput cols) "
     editor="${EDITOR:-vi}"
 
     read_config "${XDG_CONFIG_HOME:-${HOME}/.config}/rdm/rdmrc}" ~/.rdmrc
@@ -70,12 +70,10 @@ main() {
 
     tmpfile="$(mktemp -t "${0##*/}_XXXXXXXXX")"
 
-    if [ -z "$1" ]; then
-        die "Usage: ${0##*/} CMD [PAGE] [FILES...]"
-    fi
-
     cmd=$1
-    shift
+    if [ -n "$cmd" ]; then
+        shift
+    fi
 
     case $cmd in
            list) search -t "$@" ;;
@@ -92,6 +90,8 @@ main() {
          delete) delete_page "$@" ;;
            diff) diff_page "$@" ;;
          rename) rename_page "$@" ;;
+        edit-reload) edit_reload "$@" ;;
+             "") ui "$@" ;;
               *) die "Unknown subcommand '$cmd'" ;;
     esac
 }
@@ -129,6 +129,36 @@ select_page() {
     fi
 }
 
+ui() {
+    RDM_PAGER="less"
+    RDM_PROJECT="$project"
+    RDM_BASE_URL="$base_url"
+    RDM_API_KEY="$key"
+
+    export RDM_PAGER
+    export RDM_PROJECT
+    export RDM_BASE_URL
+    export RDM_API_KEY
+
+    search | fzf \
+        --border=rounded \
+        --tac \
+        --border-label " Redmine $base_url $project " \
+        --no-scrollbar \
+        --preview-window border-left \
+        --exact \
+        --header-first \
+        --header "^e edit ^v view ^o open ^y yank ^s search ^d diff ^c quit" \
+        --preview "$0 view {}" \
+        --bind "ctrl-e:execute($0 edit {})+refresh-preview" \
+        --bind "ctrl-o:execute($0 open {})" \
+        --bind "ctrl-y:execute($0 yank {})" \
+        --bind "ctrl-d:execute($0 diff {})" \
+        --bind "ctrl-v:execute($0 view {})+refresh-preview" \
+        --bind "ctrl-s:reload($0 search {q})+clear-query" \
+        --bind "enter:execute($0 view {})+refresh-preview"
+}
+
 open_page() {
     select_page "$1"
     xdg-open "$base_url/projects/$project/wiki/$title"
@@ -139,9 +169,15 @@ yank_page() {
     echo "$base_url/projects/$project/wiki/$title" | xclip
 }
 
+edit_reload() {
+    $0 edit "${TITLE?}"
+    $0 view "${TITLE?}" >"${TMPFILE?}"
+}
+
 view_page() {
     select_page "$1"
-    api "$title" | jq -r '.wiki_page|.text' | ${formatter} | ${pager}
+    api "$title" | jq -r '.wiki_page|.text' | ${formatter} >"$tmpfile"
+    TITLE="$title" TMPFILE="$tmpfile" EDITOR="$0 edit-reload" ${pager} "$tmpfile"
 }
 
 replace_page() {
