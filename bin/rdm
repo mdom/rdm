@@ -292,7 +292,7 @@ search() {
             shift
             ;;
     esac
-    if [ "$#" -eq 0 ]; then
+    if [ -z "$1" ]; then
         api "index" | jq -r '.wiki_pages|.[]|.title'
     fi
     url="$base_url/projects/$project/search.json?q=$*&wiki_pages=1"
