@@ -94,6 +94,7 @@ main() {
         view-file) view_file "$@" ;;
         ui-files) ui_files "$@" ;;
         edit-reload) edit_reload "$@" ;;
+        switch-project) switch_project "$@" ;;
              "") ui "$@" ;;
               *) die "Unknown subcommand '$cmd'" ;;
     esac
@@ -143,22 +144,36 @@ ui() {
     export RDM_BASE_URL
     export RDM_API_KEY
 
-    search | fzf \
-        --border=rounded \
-        --no-scrollbar \
-        --preview-window border-left \
-        --exact \
-        --reverse \
-        --header-first \
-        --border-label " rdm: ^j view ^e edit ^v files ^o open ^y yank ^s search ^d diff ^c quit " \
-        --preview "$0 view {}" \
-        --bind "ctrl-e:execute($0 edit {})+refresh-preview" \
-        --bind "ctrl-o:execute($0 open {})" \
-        --bind "ctrl-y:execute($0 yank {})" \
-        --bind "ctrl-d:execute($0 diff {})" \
-        --bind "ctrl-v:execute($0 ui-files {})" \
-        --bind "ctrl-s:reload($0 search {q})+clear-query" \
-        --bind "enter:execute($0 view {})+refresh-preview"
+    new_project="$(
+                   search | fzf \
+            --border=rounded \
+            --no-scrollbar \
+            --preview-window border-left \
+            --exact \
+            --reverse \
+            --header-first \
+            --border-label " rdm: ^j view ^e edit ^v files ^o open ^y yank ^s search ^d diff ^c quit " \
+            --preview "$0 view {}" \
+            --bind "ctrl-e:execute($0 edit {})+refresh-preview" \
+            --bind "ctrl-o:execute($0 open {})" \
+            --bind "ctrl-y:execute($0 yank {})" \
+            --bind "ctrl-d:execute($0 diff {})" \
+            --bind "ctrl-v:execute($0 ui-files {})" \
+            --bind "ctrl-s:reload($0 search {q})+clear-query" \
+            --bind "^:become(exec $0 switch-project)" \
+            --bind "enter:execute($0 view {})+refresh-preview"
+    )"
+    if [ -n "$new_project" ]; then
+        RDM_PROJECT="$new_project"
+        export RDM_PROJECT
+        exec "$0"
+    fi
+}
+
+switch_project() {
+    my_curl --url-query include=enabled_modules "$base_url/projects.json" \
+        | jq -r '.projects|.[]|select(.enabled_modules[]?.name == "wiki")|.name' \
+        | fzf --bind 'ctrl-c:ignore,ctrl-g:ignore,ctrl-q:ignore,esc:ignore'
 }
 
 open_page() {
@@ -316,7 +331,8 @@ search() {
             ;;
     esac
     if [ -z "$1" ]; then
-        api "index" | jq -r '.wiki_pages|.[]|.title'
+        api_unsafe "index" | jq -r '.wiki_pages|.[]|.title'
+        return
     fi
     url="$base_url/projects/$project/search.json?q=$*&wiki_pages=1"
     url="$(echo "$url" | sed 's/ /%20/g')"
